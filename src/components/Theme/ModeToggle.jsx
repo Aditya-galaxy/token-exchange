@@ -11,13 +11,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function ThemeFunction() {
-    const { theme } = useTheme();
-    return theme;
-}
 
 export function ModeToggle() {
-    const [tradeTheme, setTradeTheme] = React.useState("light");
     const { setTheme } = useTheme();
     return (
     <DropdownMenu>
@@ -31,13 +26,11 @@ export function ModeToggle() {
       <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => {
                     setTheme("light");
-                    setTradeTheme("light");
                  }}>
           Light
         </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => {
                     setTheme("dark");
-                    setTradeTheme("dark");
                  }}>
           Dark
         </DropdownMenuItem>

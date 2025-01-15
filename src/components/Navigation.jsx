@@ -1,73 +1,94 @@
-import React from "react";
+import React, { useContext } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Wallet,
-  ArrowUpDown,
-  Search,
-  TrendingUp,
-  Clock,
-  DollarSign,
-  ChevronUp,
-  ChevronDown,
-} from "lucide-react";
+import { Wallet, ArrowUpDown, Search, TrendingUp } from "lucide-react";
+import { TokenContext } from "@/Helper/Context";
+import { ModeToggle } from "./Theme/ModeToggle";
 
-// Navigation Component
+const Navigation = () => {
+    // Get pathname from useLocation to determine current page
+    const location = useLocation();
+    const currentPath = location.pathname.slice(1) || 'markets';
 
-export default function Navigation(props) {
+    // Get context values
+    const { searchTerm, setSearchTerm, wallet, connectWallet, loading } = useContext(TokenContext);
+    const truncateAddress = (address) => {
+        if (!address) return '';
+        return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    };
+
     return (
-    <div className="fixed top-0 left-0 right-0 bg-background border-b z-50">
-        <div className="container mx-auto">
-            <div className="flex items-center justify-between h-16">
-                <div className="flex items-center space-x-4">
-                    <h1 className="text-xl font-bold">CryptoExchange</h1>
-                    <nav className="hidden md:flex space-x-4">
-                        <Button
-                            variant={currentPage === "markets" ? "default" : "ghost"}
-                            onClick={() => setCurrentPage("markets")}
-                        >
-                            <TrendingUp className="mr-2 h-4 w-4" />
-                            Markets
-                        </Button>
-                        <Button
-                            variant={currentPage === "trade" ? "default" : "ghost"}
-                            onClick={() => setCurrentPage("trade")}
-                        >
-                            <ArrowUpDown className="mr-2 h-4 w-4" />
-                            Trade
-                        </Button>
-                        <Button
-                            variant={currentPage === "wallet" ? "default" : "ghost"}
-                            onClick={() => setCurrentPage("wallet")}
-                        >
-                            <Wallet className="mr-2 h-4 w-4" />
-                            Wallet
-                        </Button>
-                    </nav>
-                </div>
-                <div className="flex items-center space-x-4">
-                    <div className="relative">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search tokens..."
-                            className="pl-8 w-[200px]"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+        <div className="fixed top-0 left-0 right-0 bg-background border-b z-50">
+            <div className="container mx-auto">
+                <div className="flex items-center justify-between h-16">
+                    <div className="flex items-center space-x-4">
+                        <h1 className="text-xl font-bold">TokenExchange</h1>
+                        <nav className="hidden md:flex space-x-4">
+                            <Link to="/markets">
+                                <Button
+                                    variant={currentPath === "markets" ? "default" : "ghost"}
+                                >
+                                    <TrendingUp className="mr-2 h-4 w-4" />
+                                    Markets
+                                </Button>
+                            </Link>
+                            <Link to="/trade">
+                                <Button
+                                    variant={currentPath === "trade" ? "default" : "ghost"}
+                                >
+                                    <ArrowUpDown className="mr-2 h-4 w-4" />
+                                    Trade
+                                </Button>
+                            </Link>
+                            <Link to="/wallet">
+                                <Button
+                                    variant={currentPath === "wallet" ? "default" : "ghost"}
+                                >
+                                    <Wallet className="mr-2 h-4 w-4" />
+                                    Wallet
+                                </Button>
+                            </Link>
+
+                            <ModeToggle/>
+                        </nav>
                     </div>
-                    <Button
-                        variant="outline"
-                        onClick={connectWallet}
-                        disabled={loading || wallet}
-                    >
-                        {wallet
-                            ? `${wallet.address.slice(0, 6)}...${wallet.address.slice(-4)}`
-                            : "Connect Wallet"}
-                    </Button>
+                    <div className="flex items-center space-x-4">
+                        <div className="relative">
+                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search tokens..."
+                                className="pl-8 w-[200px]"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        {wallet ? (
+                            <Link to="/wallet">
+                                <Button
+                                    variant="outline"
+                                    className="font-mono"
+                                >
+                                    <Wallet className="mr-2 h-4 w-4" />
+                                    {truncateAddress(wallet.address)}
+                                </Button>
+                            </Link>
+                        ) : (
+                            <Button
+                                variant="outline"
+                                onClick={connectWallet}
+                                disabled={loading}
+                            >
+                                <Wallet className="mr-2 h-4 w-4" />
+                                {loading ? "Connecting..." : "Connect Wallet"}
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
-    </div >
-    )
+    );
 };
 
+
+export default Navigation;

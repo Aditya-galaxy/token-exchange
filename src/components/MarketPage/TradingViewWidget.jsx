@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, memo } from "react";
-import { them
 
 const TradingViewWidget = () => {
   const container = useRef();
@@ -12,11 +11,13 @@ const TradingViewWidget = () => {
     script.async = true;
     script.innerHTML = JSON.stringify({
       //TradingView widget configuration
+      "autosize": true,
       "height": 610,
       "symbol": "BINANCE:BTCUSDT",
       "interval": "D",
       "timezone": "Etc/UTC",
-      "theme": `${theme}`,
+      "theme": "dark",
+      "isTransparent": true,
       "style": "1",
       "locale": "en",
       "details": true,
