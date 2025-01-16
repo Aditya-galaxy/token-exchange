@@ -1,3 +1,4 @@
+"use client"
 import React, { useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,7 @@ const Navigation = () => {
                                     variant={currentPath === "markets" ? "default" : "ghost"}
                                 >
                                     <TrendingUp className="mr-2 h-4 w-4" />
-                                    Markets
+                                    Market
                                 </Button>
                             </Link>
                             <Link to="/trade">

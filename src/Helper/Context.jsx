@@ -48,6 +48,7 @@ const TokenProvider = ({ children }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [wallet, setWallet] = useState(null);
+  const [trades, setTrades] = useState([]);
 
   const createPriceWebSocket = (onMessage) => {
         return setInterval(() => {INITIAL_TOKENS.forEach((token) => {
@@ -63,41 +64,110 @@ const TokenProvider = ({ children }) => {
         }, 5000);
   };
 
+  // Mock transaction generation function
+    const generateMockTransactions = (address) => {
+        const mockTrades = [];
+        const tokens = ['BTC', 'ETH', 'ICP'];
+        const now = Date.now();
+        
+        // Generate last 5 mock transactions
+        for (let i = 0; i < 5; i++) {
+            mockTrades.push({
+                id: `tx-${i}`,
+                type: Math.random() > 0.5 ? 'buy' : 'sell',
+                token: tokens[Math.floor(Math.random() * tokens.length)],
+                amount: parseFloat((Math.random() * 2).toFixed(4)),
+                price: parseFloat((Math.random() * 50000).toFixed(2)),
+                timestamp: now - (i * 86400000), // Each transaction 1 day apart
+                address
+            });
+        }
+        return mockTrades;
+    };
+
   const connectWallet = async () => {
-    try {
-      setLoading(true);
-      // Simulate wallet connection delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+        try {
+            setLoading(true);
+            // Simulate wallet connection delay
+            await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const mockWallet = {
-        address: "0x" + Math.random().toString(16).slice(2, 42),
-        balances: {
-          BTC: 0.5,
-          ETH: 5.0,
-          ICP: 100.0,
-        },
-      };
+            const mockWallet = {
+                address: "0x" + Math.random().toString(16).slice(2, 42),
+                balances: {
+                    BTC: 0.5,
+                    ETH: 5.0,
+                    ICP: 100.0,
+                },
+            };
 
-      setWallet(mockWallet);
+            // Generate mock transactions for the wallet
+            const mockTrades = generateMockTransactions(mockWallet.address);
+            setTrades(mockTrades);
+            
+            setWallet(mockWallet);
 
-      // Update token balances
-      setTokens((prevTokens) =>
-        prevTokens.map((token) => ({
-          ...token,
-          balance: mockWallet.balances[token.symbol] || 0,
-        }))
-      );
-
-    } catch (err) {
-      console.error("Failed to connect wallet:", err);
-    } finally {
-      setLoading(false);
-    }
+            // Update token balances
+            setTokens((prevTokens) =>
+                prevTokens.map((token) => ({
+                    ...token,
+                    balance: mockWallet.balances[token.symbol] || 0,
+                }))
+            );
+        } catch (error) {
+            console.error("Failed to connect wallet:", error);
+        } finally {
+            setLoading(false);
+        }
   };
+  const addTrade = (tradeDetails) => {
+        const newTrade = {
+            id: `tx-${Date.now()}`,
+            timestamp: Date.now(),
+            address: wallet?.address,
+            ...tradeDetails
+        };
+        
+        setTrades(prevTrades => [newTrade, ...prevTrades]);
+        
+        // Update token balances based on trade
+        setTokens(prevTokens => 
+            prevTokens.map(token => {
+                if (token.symbol === tradeDetails.token) {
+                    const balanceChange = tradeDetails.type === 'buy' 
+                        ? tradeDetails.amount 
+                        : -tradeDetails.amount;
+                    return {
+                        ...token,
+                        balance: (token.balance || 0) + balanceChange
+                    };
+                }
+                return token;
+            })
+        );
+  };
+  const value = {
+    INITIAL_TOKENS,
+    selectedToken,
+    setSelectedToken,
+    tokens,
+    loading,
+    setLoading,
+    wallet,
+    setWallet,
+    tokens,
+    setTokens,
+    loading,
+    setLoading,
+    searchTerm,
+    setSearchTerm,
+    connectWallet,
+    createPriceWebSocket,
+    trades,
+    addTrade
+    };
   
     return (
-        <div><TokenContext.Provider value={{ INITIAL_TOKENS, tokens, searchTerm, setSearchTerm, wallet, setWallet, loading, setLoading,
-      connectWallet, setTokens, selectedToken, setSelectedToken, createPriceWebSocket }}>
+        <div><TokenContext.Provider value={value}>
             {children}
         </TokenContext.Provider></div>
   )

@@ -15,20 +15,11 @@ const App = () => {
             <Navigation />
           <main className="container mx-auto pt-24 pb-8 px-4">
           <Routes>
-            <Route exact path="/" element={<><MarketPage />
-              <Card>
-            <CardContent />
-            <TradingViewWidget />
-            <CardContent />
-          </Card></>}/>
-              <Route path="/markets" element={<><MarketPage /><Card>
-            <CardContent />
-            <TradingViewWidget />
-            <CardContent />
-          </Card></>} />
-              <Route path="/trade" element={<TradePage />} />
-              <Route path="/wallet" element={<WalletPage />} />
-            </Routes>
+            <Route exact path="/" element={<MarketPage />}/>
+            <Route path="/markets" element={<MarketPage />} />
+            <Route path="/trade" element={<TradePage />} />
+            <Route path="/wallet" element={<WalletPage />} />
+          </Routes>
           </main>
       </Router>
     </TokenProvider>

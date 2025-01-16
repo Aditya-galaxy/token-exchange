@@ -1,5 +1,6 @@
-import React, { useState, useContext } from "react";
-import { Context } from "@/Helper/Context";
+"use client"
+import React, { useContext } from "react";
+import { TokenContext } from "@/Helper/Context";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Wallet } from "lucide-react";
@@ -7,42 +8,15 @@ import TransactionHistory from "./TransactionHistory";
 
 // Wallet Page Component
 const WalletPage = () => {
-  const [loading, setLoading] = useState(false);
-  const [wallet, setWallet] = useState(null);
-
-  // Connect Wallet Function
-  const connectWallet = async () => {
-    try {
-      setLoading(true);
-      // Simulate wallet connection delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const mockWallet = {
-        address: "0x" + Math.random().toString(16).slice(2, 42),
-        balances: {
-          BTC: 0.5,
-          ETH: 5.0,
-          ICP: 100.0,
-        },
-      };
-
-      setWallet(mockWallet);
-
-      // Update token balances
-      setTokens((prevTokens) =>
-        prevTokens.map((token) => ({
-          ...token,
-          balance: mockWallet.balances[token.symbol] || 0,
-        }))
-      );
-
-      setError(null);
-    } catch (err) {
-      setError("Failed to connect wallet: " + err.message);
-    } finally {
-      setLoading(false);
-      }
-  };
+  const { 
+        wallet, 
+        setWallet, 
+        tokens, 
+        setTokens, 
+        loading, 
+        setLoading, 
+        connectWallet 
+    } = useContext(TokenContext);
   
   return (
     <div className="max-w-4xl mx-auto space-y-6">
