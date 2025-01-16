@@ -1,3 +1,4 @@
+"use client"
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Navigation from "@/components/Navigation";
@@ -5,8 +6,6 @@ import MarketPage from "@/components/MarketPage/MarketPage";
 import TradePage from "@/components/TradePage/TradePage";
 import WalletPage from "@/components/WalletPage/WalletPage";
 import TokenProvider from "@/Helper/Context";
-import { Card, CardContent } from "../ui/card";
-import TradingViewWidget from "../MarketPage/TradingViewWidget";
 
 const App = () => {
   return (

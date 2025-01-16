@@ -1,3 +1,4 @@
+"use client";
 import { TokenContext } from "@/Helper/Context";
 import React, { useState, useEffect, useContext } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
