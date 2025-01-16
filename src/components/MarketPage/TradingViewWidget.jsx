@@ -1,4 +1,3 @@
-"use client"
 import React, { useEffect, useRef, memo } from "react";
 
 const TradingViewWidget = ({ selectedSymbol = "BINANCE:BTCUSDT" }) => {
@@ -6,7 +5,7 @@ const TradingViewWidget = ({ selectedSymbol = "BINANCE:BTCUSDT" }) => {
   const scriptRef = useRef(null);
 
   useEffect(() => {
-    if (container.current) {
+    if (typeof window !== "undefined" && container.current) {
       // Remove existing widget if any
       while (container.current.firstChild) {
         container.current.removeChild(container.current.firstChild);

@@ -1,24 +1,17 @@
-"use client";
 import { TokenContext } from "@/Helper/Context";
 import React, { useState, useEffect, useContext } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import TradingViewWidget from "@/components/MarketPage/TradingViewWidget";
-import Navigation from "@/components/Navigation";
-import WalletPage from "@/components/WalletPage/WalletPage";
-import { ModeToggle } from "@/components/Theme/ModeToggle";
 
 const MarketPage = () => {
   const { INITIAL_TOKENS, createPriceWebSocket } = useContext(TokenContext);
-  
   const [wallet, setWallet] = useState(null);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [tokens, setTokens] = useState(INITIAL_TOKENS || []);
   const [selectedToken, setSelectedToken] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const wsInterval = createPriceWebSocket((data) => {
@@ -48,7 +41,6 @@ const MarketPage = () => {
           return token;
         });
       });
-      setIsLoading(false);
     });
 
     return () => clearInterval(wsInterval);
@@ -76,7 +68,7 @@ const MarketPage = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {!isLoading && filteredTokens.map((token) => (
+                {filteredTokens.map((token) => (
                   <Button
                     key={token.id}
                     variant="outline"
@@ -112,14 +104,20 @@ const MarketPage = () => {
               </div>
             </CardContent>
           </Card>
-
+          
           <Card>
             <CardContent className="p-0">
-              <TradingViewWidget 
-                selectedSymbol={selectedToken ? `BINANCE:${selectedToken.symbol}USDT` : "BINANCE:BTCUSDT"}
-              />
+              {selectedToken ? (
+            <TradingViewWidget 
+              selectedSymbol={`BINANCE:${selectedToken.symbol}USDT`}
+            />
+          ) : (
+            <TradingViewWidget />
+          )}
             </CardContent>
           </Card>
+
+          
         </div>
       </main>
     </div>

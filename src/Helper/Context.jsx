@@ -61,7 +61,7 @@ const TokenProvider = ({ children }) => {
                 volume: Math.random() * token.price * 100,
             });
         });
-        }, 5000);
+        }, 3000);
   };
 
   // Mock transaction generation function
