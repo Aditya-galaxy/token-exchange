@@ -4,7 +4,7 @@ import TokenContext from "@/Helper/Context";
 
 export const metadata = {
   title: "Token Exchange",
-  description: "A simple cryptocurrency exchange app",
+  description: "A simple demo cryptocurrency exchange app",
 };
 
 export default function RootLayout({ children }) {
