@@ -8,6 +8,8 @@ Firstly import the required packages by running the following command on termina
 
 ```bash
 npm i
+#or
+npm install
 ```
 
 Then, run the development server:
