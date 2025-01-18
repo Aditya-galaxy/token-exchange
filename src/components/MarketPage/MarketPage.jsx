@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import TradingViewWidget from "@/components/MarketPage/TradingViewWidget";
+import Footer from "../Footer";
 
 const MarketPage = () => {
   const { INITIAL_TOKENS, createPriceWebSocket } = useContext(TokenContext);
@@ -118,7 +119,7 @@ const MarketPage = () => {
             </CardContent>
           </Card>
 
-          
+          <Footer />
         </div>
       </main>
     </div>

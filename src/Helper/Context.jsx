@@ -1,5 +1,6 @@
 "use client";
 import React, { createContext, useState } from 'react';
+import { toast } from "sonner";
 
 export const TokenContext = createContext();
 
@@ -117,6 +118,7 @@ const TokenProvider = ({ children }) => {
             console.error("Failed to connect wallet:", error);
         } finally {
             setLoading(false);
+            toast("Wallet connected successfully");
         }
   };
   const addTrade = (tradeDetails) => {
@@ -127,8 +129,8 @@ const TokenProvider = ({ children }) => {
             ...tradeDetails
         };
         
-        setTrades(prevTrades => [newTrade, ...prevTrades]);
-        
+      setTrades(prevTrades => [newTrade, ...prevTrades]);
+      
         // Update token balances based on trade
         setTokens(prevTokens => 
             prevTokens.map(token => {
