@@ -225,8 +225,7 @@ const TradePage = () => {
           <div className="space-y-4">
             {!selectedToken ? (
               <div className="text-center text-muted-foreground py-8">
-                <div>Connect your wallet first</div>
-                <div>Select a token to view trades</div>
+                Select a token to view trades
               </div>
             ) : tokenTrades.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
