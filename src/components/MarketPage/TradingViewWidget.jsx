@@ -1,59 +1,67 @@
-import React, { useEffect, useRef, memo } from "react";
+"use client";
+import React, { useEffect, useState } from 'react';
 
 const TradingViewWidget = ({ selectedSymbol = "BINANCE:BTCUSDT" }) => {
-  const container = useRef();
-  const scriptRef = useRef(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && container.current) {
-      // Remove existing widget if any
-      while (container.current.firstChild) {
-        container.current.removeChild(container.current.firstChild);
-      }
+    setIsClient(true);
+  }, []);
 
-      // Create new script element
-      const script = document.createElement("script");
-      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-      script.type = "text/javascript";
-      script.async = true;
-      script.innerHTML = JSON.stringify({
-        "autosize": true,
-        "height": 610,
-        "symbol": selectedSymbol,
-        "interval": "D",
-        "timezone": "Etc/UTC",
-        "theme": "dark",
-        "isTransparent": true,
-        "style": "1",
-        "locale": "en",
-        "details": true,
-        "toolbar_bg": "#f1f3f6",
-        "withdateranges": true,
-        "enable_publishing": false,
-        "allow_symbol_change": true,
-        "container_id": "tradingview_widget"
+  useEffect(() => {
+    if (!isClient) return;
+
+    const loadTradingView = () => {
+      const widget = new window.TradingView.widget({
+        width: "100%",
+        height: 600,
+        symbol: selectedSymbol,
+        interval: "D",
+        timezone: "Etc/UTC",
+        theme: "dark",
+        style: "1",
+        locale: "en",
+        details: true,
+        toolbar_bg: "#f1f3f6",
+        enable_publishing: false,
+        allow_symbol_change: true,
+        container_id: "tradingview_chart"
       });
+    };
 
-      // Store script reference
-      scriptRef.current = script;
-      container.current.appendChild(script);
+    // Check if TradingView is already loaded
+    if (window.TradingView) {
+      loadTradingView();
+      return;
     }
 
-    // Cleanup function
+    // Load TradingView script
+    const script = document.createElement('script');
+    script.src = "https://s3.tradingview.com/tv.js";
+    script.async = true;
+    script.onload = loadTradingView;
+    document.head.appendChild(script);
+
+    // Cleanup
     return () => {
-      if (scriptRef.current && scriptRef.current.parentNode) {
-        scriptRef.current.parentNode.removeChild(scriptRef.current);
+      const container = document.getElementById('tradingview_chart');
+      if (container) {
+        container.innerHTML = '';
       }
     };
-  }, [selectedSymbol]);
+  }, [isClient, selectedSymbol]);
+
+  if (!isClient) {
+    return (
+      <div className="w-full h-[600px] bg-slate-800 flex items-center justify-center">
+        <div className="text-white">Loading chart...</div>
+      </div>
+    );
+  }
 
   return (
-    <div 
-      id="tradingview_widget" 
-      ref={container} 
-      className="w-full h-[610px]"
-    />
+    <div id="tradingview_chart" className="w-full h-[600px]" />
   );
 };
 
-export default memo(TradingViewWidget);
+export default TradingViewWidget;
