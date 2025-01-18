@@ -1,5 +1,4 @@
 import { Heart } from 'lucide-react';
-import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 
 const Footer = () => {
