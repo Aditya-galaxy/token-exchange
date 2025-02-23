@@ -118,7 +118,7 @@ const TokenProvider = ({ children }) => {
             console.error("Failed to connect wallet:", error);
         } finally {
             setLoading(false);
-            toast("Wallet connected successfully");
+            toast("Wallet connected Successfully");
         }
   };
   const addTrade = (tradeDetails) => {

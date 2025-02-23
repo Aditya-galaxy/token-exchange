@@ -1,11 +1,21 @@
 "use client";
 import { TokenContext } from "@/Helper/Context";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import TradingViewWidget from "@/components/MarketPage/TradingViewWidget";
 import Footer from "../Footer";
+import dynamic from 'next/dynamic';
+import LoadingSpinner from "./LoadingSpinner";
+
+// Update the dynamic import to include loading component
+const TradingViewWidget = dynamic(
+  () => import('./TradingViewWidget'),
+  {
+    ssr: false,
+    loading: LoadingSpinner,
+  }
+);
 
 const MarketPage = () => {
   const { INITIAL_TOKENS, createPriceWebSocket } = useContext(TokenContext);
@@ -14,6 +24,11 @@ const MarketPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [tokens, setTokens] = useState(INITIAL_TOKENS || []);
   const [selectedToken, setSelectedToken] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const wsInterval = createPriceWebSocket((data) => {
@@ -109,13 +124,18 @@ const MarketPage = () => {
           
           <Card>
             <CardContent className="p-0">
-              {selectedToken ? (
-            <TradingViewWidget 
-              selectedSymbol={`BINANCE:${selectedToken.symbol}USDT`}
-            />
-          ) : (
-            <TradingViewWidget />
-          )}
+              <Suspense fallback={<LoadingSpinner />}>
+                {mounted && (
+                  selectedToken ? (
+                    <TradingViewWidget 
+                      selectedSymbol={`BINANCE:${selectedToken.symbol}USDT`}
+                      key={selectedToken.symbol}
+                    />
+                  ) : (
+                    <TradingViewWidget />
+                  )
+                )}
+              </Suspense>
             </CardContent>
           </Card>
 

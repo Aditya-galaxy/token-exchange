@@ -1,6 +1,7 @@
 import { ThemeProvider } from "@/components/Theme/ThemeProvider";
 import "./globals.css";
 import TokenContext from "@/Helper/Context";
+import App from "@/components/App/App";
 import { Toaster } from "sonner";
 
 export const metadata = {
@@ -20,7 +21,7 @@ export default function RootLayout({ children }) {
             enableSystem
             disableTransitionOnChange
           >
-            <TokenContext>{children}</TokenContext>
+            <TokenContext><App>{children}</App></TokenContext>
             <Toaster />
           </ThemeProvider>
         </body>
