@@ -4,6 +4,8 @@
 
 TokenExchange is a demo cryptocurrency trading platform built with Next.js, featuring a simulated trading environment and dummy wallet connection functionality.
 
+**It's live on ICP Blockchain:** [https://iwd7k-bqaaa-aaaaj-az6fa-cai.icp0.io/](https://iwd7k-bqaaa-aaaaj-az6fa-cai.icp0.io/)
+
 ## ✨ Features
 
 ### 🔗 Dummy Wallet Connection
