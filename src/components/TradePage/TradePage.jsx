@@ -2,6 +2,8 @@
 import React, { useState, useContext } from 'react';
 import { TokenContext } from "@/Helper/Context";
 import { validateTrade } from "@/lib/trading";
+import { reviewOrder } from "@/lib/coach";
+import { formatUsd, positionSizePct, unrealizedPnl } from "@/lib/portfolio";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +24,9 @@ const TradePage = () => {
     cash,
     trades,
     addTrade,
+    positions,
+    closed,
+    equity,
   } = useContext(TokenContext);
 
   // Local state
@@ -38,6 +43,24 @@ const TradePage = () => {
 
   const selectedToken =
     tokens.find((token) => token.symbol === selectedSymbol) ?? null;
+
+  const position = selectedSymbol ? positions[selectedSymbol] : null;
+  const orderTotal =
+    Number.parseFloat(tradeAmount) * Number.parseFloat(tradePrice) || 0;
+
+  // Coach the order *before* it is placed — that's when advice is useful.
+  const coachNotes =
+    wallet && selectedToken && orderTotal > 0
+      ? reviewOrder({
+          type: "buy",
+          symbol: selectedToken.symbol,
+          total: orderTotal,
+          equity,
+          cash,
+          position,
+          closed,
+        })
+      : [];
 
   const handleTokenSelect = (symbol) => {
     const token = tokens.find((t) => t.symbol === symbol);
@@ -171,6 +194,56 @@ const TradePage = () => {
               readOnly
             />
           </div>
+
+          {position && position.quantity > 0 && selectedToken && (
+            <div className="rounded-lg border p-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Open position</span>
+                <span className="font-medium">
+                  {position.quantity.toFixed(4)} {selectedToken.symbol}
+                </span>
+              </div>
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-muted-foreground">
+                  Avg cost ${position.avgCost.toFixed(2)}
+                </span>
+                <span
+                  className={
+                    unrealizedPnl(position, selectedToken.price) >= 0
+                      ? "text-green-500"
+                      : "text-red-500"
+                  }
+                >
+                  {formatUsd(unrealizedPnl(position, selectedToken.price))} unrealized
+                </span>
+              </div>
+            </div>
+          )}
+
+          {coachNotes.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Coach</span>
+                <span>
+                  {positionSizePct(orderTotal, equity).toFixed(1)}% of account
+                </span>
+              </div>
+              {coachNotes.map((note) => (
+                <p
+                  key={note.id}
+                  className={`rounded-lg border-l-2 bg-muted/40 p-2.5 text-xs leading-relaxed ${
+                    note.level === "danger"
+                      ? "border-l-red-500 text-red-400"
+                      : note.level === "warn"
+                      ? "border-l-yellow-500 text-yellow-300"
+                      : "border-l-green-500 text-green-400"
+                  }`}
+                >
+                  {note.message}
+                </p>
+              ))}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <Button

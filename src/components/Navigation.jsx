@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Wallet, ArrowUpDown, Search, TrendingUp } from "lucide-react";
+import { Wallet, ArrowUpDown, Search, TrendingUp, GraduationCap } from "lucide-react";
 import { TokenContext } from "@/Helper/Context";
 import { ModeToggle } from "./Theme/ModeToggle";
 
@@ -32,6 +32,14 @@ const Navigation = () => {
                 >
                   <TrendingUp className="mr-2 h-4 w-4" />
                   Markets
+                </Button>
+              </Link>
+              <Link href="/learn">
+                <Button
+                  variant={currentPath.startsWith("learn") ? "default" : "ghost"}
+                >
+                  <GraduationCap className="mr-2 h-4 w-4" />
+                  Learn
                 </Button>
               </Link>
               <Link href="/trade">
