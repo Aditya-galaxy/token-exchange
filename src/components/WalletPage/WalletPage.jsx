@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Wallet } from "lucide-react";
 import TransactionHistory from "./TransactionHistory";
+import Performance from "./Performance";
 
 // Wallet Page Component
 const WalletPage = () => {
@@ -41,6 +42,8 @@ const WalletPage = () => {
         </Card>
       ) : (
         <>
+          <Performance />
+
           <Card>
             <CardHeader>
               <CardTitle>Your Wallet</CardTitle>
