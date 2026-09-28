@@ -1,103 +1,114 @@
-# 🚀 TokenExchange - Crypto Trading Demo
+# TokenExchange
 
-## 📝 Project Overview
+A demo cryptocurrency exchange front-end: browse a simulated market, connect a
+mock wallet, place simulated buy/sell orders, and review trade history.
 
-TokenExchange is a demo cryptocurrency trading platform built with Next.js, featuring a simulated trading environment and dummy wallet connection functionality.
+**Live:** https://iwd7k-bqaaa-aaaaj-az6fa-cai.icp0.io/ — served from an
+[Internet Computer](https://internetcomputer.org/) asset canister.
 
-**It's live on ICP Blockchain:** [https://iwd7k-bqaaa-aaaaj-az6fa-cai.icp0.io/](https://iwd7k-bqaaa-aaaaj-az6fa-cai.icp0.io/)
+> ⚠️ **This is a simulation.** There is no backend, no real wallet, no chain
+> interaction, and no real money. Prices are generated locally by a timer and
+> all balances are in-memory. It is a UI/portfolio demo, not a trading product.
 
-## ✨ Features
+---
 
-### 🔗 Dummy Wallet Connection
-- Simulated wallet authentication process
-- Mock wallet connection interface
-- Demonstrates wallet interaction workflows
-- Secure dummy credential management
+## What it actually does
 
-### 📊 Trading View
-- Interactive trading interface
-- Simulated price charts
-- Multiple cryptocurrency pair visualizations
-- Real-time price update simulation
+| Area | Behaviour |
+|---|---|
+| **Markets** | Lists BTC / ETH / ICP with prices that random-walk every 3s. Searchable from the navbar. Embeds a TradingView chart for the selected pair. |
+| **Wallet** | "Connect wallet" simulates a 1s handshake and generates a mock `0x…` address, token balances, and seeded trade history. |
+| **Trade** | Buy/sell against your simulated balances. Orders are validated for amount, price, holdings, and available cash. |
+| **History** | Shows trades recorded during the session. |
+| **Theme** | Light/dark/system toggle; the embedded chart follows it. |
 
-### 💱 Trade Functionality
-- Dummy buy and sell order placement
-- Simulated market and limit order types
-- Mock transaction processing
-- Estimated transaction fee calculations
+State lives in a single React context (`src/Helper/Context.jsx`) and resets on
+refresh — there is no persistence layer.
 
-### 📜 Transaction History
-- Comprehensive mock transaction log
-- Detailed simulated transaction records
-- Advanced filtering and sorting capabilities
-- Transaction history export feature
+## Tech stack
 
-## 🛠 Tech Stack
+- **Next.js 16** (App Router, static export via `output: "export"`)
+- **React 19**, **Tailwind CSS 3**, **shadcn/ui** primitives on Radix
+- **next-themes** for theming, **sonner** for toasts
+- **Vitest** for unit tests
+- **dfx** to deploy the exported site to an IC asset canister
 
-- **Framework:** Next.js
-- **Frontend:** React.js
-- **State Management:** React Context API
-- **Styling:** Tailwind CSS
-- **Chart Library:** TradingView Widget (Simulated)
-- **Wallet Connection:** Dummy authentication mechanism
+## Getting started
 
-## 🚀 Getting Started
+Requires Node.js 20+.
 
-### Prerequisites
-- Node.js (v16+)
-- npm or yarn
-- Basic understanding of cryptocurrency trading concepts
-
-### Installation
-
-1. Clone the repository
 ```bash
-git clone https://github.com/Aditya-galaxy/TokenExchange.git
-```
-
-2. Install dependencies
-```bash
-cd token-exchange
 npm install
-```
-
-3. Set up environment variables
-- Create a `.env.local` file
-- Configure dummy API keys and simulation parameters
-
-4. Run the development server
-```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## 🔐 Important Notes
-- This is a DEMO application
-- Completely simulated trading environment
-- No real financial transactions
-- Designed for educational and demonstration purposes
+Open http://localhost:3000.
 
-## 📦 Key Components
+### Scripts
 
-- `DummyWalletProvider`: Handles simulated wallet authentication
-- `TradingSimulator`: Manages mock trading interactions
-- `PriceChartWidget`: Renders simulated price charts
-- `TransactionLogManager`: Handles mock transaction history
+| Script | Purpose |
+|---|---|
+| `npm run dev` | Start the dev server |
+| `npm run build` | Production build + static export to `out/` |
+| `npm start` | Serve the production build |
+| `npm run lint` | ESLint (flat config) |
+| `npm test` | Run the Vitest suite |
+| `npm run test:watch` | Tests in watch mode |
+| `npm run deploy:ic` | Build and deploy to the IC mainnet canister |
 
-## 🤝 Contributing
+## Project structure
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/SimulatedFeature`)
-3. Commit your changes (`git commit -m 'Add simulated trading feature'`)
-4. Push to the branch (`git push origin feature/SimulatedFeature`)
-5. Open a Pull Request
+```
+src/
+├── app/                  # App Router entries (/, /markets, /trade, /wallet)
+├── components/
+│   ├── App/App.jsx       # Shell: provider + nav + main
+│   ├── Navigation.jsx    # Header, search, wallet button, theme toggle
+│   ├── MarketPage/       # Market list + TradingView chart
+│   ├── TradePage/        # Order form and recent trades
+│   ├── WalletPage/       # Balances and transaction history
+│   ├── Theme/            # next-themes provider and toggle
+│   └── ui/               # shadcn/ui primitives
+├── Helper/Context.jsx    # Global state: tokens, wallet, cash, trades, price feed
+└── lib/
+    ├── trading.js        # Pure trading logic (validation, settlement, filtering)
+    └── utils.js          # cn() class helper
+```
 
-## 🎉 Disclaimer
+Trading rules live in `src/lib/trading.js` as pure functions with no React
+dependency, so they can be unit tested directly — see
+`src/lib/__tests__/trading.test.js`.
 
-TokenExchange is a demonstration project for learning and showcase purposes. It does not involve real cryptocurrency trading or financial transactions.
+## Deploying to the Internet Computer
+
+The app builds to static files, which are uploaded to an asset canister.
+
+```bash
+npm run build          # produces out/
+dfx deploy --network ic
+```
+
+`dfx.json` points the `token_exchange_assets` canister at `out/`, and
+`canister_ids.json` records the deployed mainnet canister ID.
+
+> `.dfx/` is generated (and holds local replica state and keys) — it is
+> gitignored and must never be committed.
+
+## Testing
+
+```bash
+npm test
+```
+
+The suite covers order validation (including insufficient funds and holdings),
+balance settlement, market filtering, and the price simulation.
+
+## Contributing
+
+1. Fork and branch: `git checkout -b feature/my-change`
+2. Make your change and keep `npm run lint` and `npm test` green
+3. Open a pull request — CI runs lint, tests, build, and a dependency audit
+
+## License
+
+[MIT](./LICENSE)

@@ -1,6 +1,7 @@
 "use client"
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { TokenContext } from "@/Helper/Context";
+import { validateTrade } from "@/lib/trading";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,98 +19,57 @@ const TradePage = () => {
   const {
     wallet,
     tokens,
-    setTokens,
+    cash,
     trades,
     addTrade,
   } = useContext(TokenContext);
 
   // Local state
-  const [selectedToken, setSelectedToken] = useState(null);
+  // Track the symbol, not the token object: deriving from context keeps
+  // balances/prices live instead of freezing a snapshot at selection time.
+  const [selectedSymbol, setSelectedSymbol] = useState(null);
   const [tradeAmount, setTradeAmount] = useState("");
   const [tradePrice, setTradePrice] = useState("");
   const [loading, setLoading] = useState(false);
+  // Errors and successes are distinct concerns; sharing one slot meant
+  // "Successfully bought..." rendered inside a destructive Alert.
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-  // Update trade price when token selection changes
-  useEffect(() => {
-    if (selectedToken) {
-      setTradePrice(selectedToken.price.toString());
-    }
-  }, [selectedToken]);
+  const selectedToken =
+    tokens.find((token) => token.symbol === selectedSymbol) ?? null;
 
-  // Find token by symbol
-  const getTokenBySymbol = (symbol) => {
-    return tokens.find(token => token.symbol === symbol);
-  };
-
-  // Handle token selection
   const handleTokenSelect = (symbol) => {
-    const token = getTokenBySymbol(symbol);
-    setSelectedToken(token);
+    const token = tokens.find((t) => t.symbol === symbol);
+    setSelectedSymbol(symbol);
+    setTradePrice(token ? String(token.price) : "");
     setError(null);
-  };
-
-  // Validate trade
-  const validateTrade = (type, amount, price) => {
-    if (!wallet) {
-      throw new Error("Please connect your wallet first");
-    }
-
-    if (!selectedToken) {
-      throw new Error("Please select a token");
-    }
-
-    if (!amount || !price) {
-      throw new Error("Please enter amount and price");
-    }
-
-    const numAmount = parseFloat(amount);
-    const numPrice = parseFloat(price);
-
-    if (isNaN(numAmount) || isNaN(numPrice)) {
-      throw new Error("Invalid amount or price");
-    }
-
-    if (numAmount <= 0 || numPrice <= 0) {
-      throw new Error("Amount and price must be positive");
-    }
-
-    if (type === "sell") {
-      const currentBalance = selectedToken.balance || 0;
-      if (numAmount > currentBalance) {
-        throw new Error(`Insufficient ${selectedToken.symbol} balance`);
-      }
-    }
-
-    return { numAmount, numPrice };
+    setSuccess(null);
   };
 
   // Execute trade
   const executeTrade = async (type) => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
     try {
-      setLoading(true);
-      setError(null);
-
-      // Validate trade
-      const { numAmount, numPrice } = validateTrade(type, tradeAmount, tradePrice);
-
-      // Create trade object
-      const trade = {
+      const { amount, price, total } = validateTrade({
         type,
-        token: selectedToken.symbol,
-        amount: numAmount,
-        price: numPrice
-      };
+        amount: tradeAmount,
+        price: tradePrice,
+        token: selectedToken,
+        wallet,
+        cash,
+      });
 
-      // Add trade to history
-      addTrade(trade);
+      addTrade({ type, token: selectedToken.symbol, amount, price, total });
 
-      // Reset form
       setTradeAmount("");
-      setTradePrice(selectedToken.price.toString());
-
-      // Show success message
-      setError(`Successfully ${type === 'buy' ? 'bought' : 'sold'} ${numAmount} ${selectedToken.symbol}`);
+      setTradePrice(String(selectedToken.price));
+      setSuccess(
+        `Successfully ${type === "buy" ? "bought" : "sold"} ${amount} ${selectedToken.symbol}`
+      );
     } catch (err) {
       setError(err.message);
     } finally {
@@ -130,16 +90,30 @@ const TradePage = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <Alert variant={error.includes("Successfully") ? "default" : "destructive"}>
+            <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
+          )}
+          {success && (
+            <Alert>
+              <AlertDescription>{success}</AlertDescription>
+            </Alert>
+          )}
+
+          {wallet && (
+            <div className="text-sm text-muted-foreground">
+              Cash available:{" "}
+              <span className="font-medium text-foreground">
+                ${cash.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
           )}
 
           <div className="space-y-2">
             <div className="text-sm text-muted-foreground">Select Token</div>
             <Select
               onValueChange={handleTokenSelect}
-              value={selectedToken?.symbol}
+              value={selectedSymbol ?? undefined}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a token" />

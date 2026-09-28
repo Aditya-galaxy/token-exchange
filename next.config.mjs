@@ -1,21 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Static export — the build output in `out/` is what gets uploaded to the
+  // Internet Computer asset canister (see dfx.json).
   output: "export",
   images: {
+    // The IC asset canister serves static files; no Next image optimizer there.
     unoptimized: true,
   },
   trailingSlash: true,
-  webpack: (config) => {
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-      net: false,
-      tls: false,
-      "utf-8-validate": false,
-      bufferutil: false,
-    };
-    return config;
-  },
   basePath: "",
 };
 

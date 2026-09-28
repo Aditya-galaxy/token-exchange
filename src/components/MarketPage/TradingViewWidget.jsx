@@ -1,90 +1,78 @@
 "use client";
-import React, { useEffect, useRef, useState } from 'react';
+
+import React, { useEffect, useRef } from "react";
+import { useTheme } from "next-themes";
+
+const TV_SCRIPT_SRC = "https://s3.tradingview.com/tv.js";
+const TV_SCRIPT_ID = "tradingview-script";
+
+/** Load tv.js once and reuse it across mounts. */
+function loadTradingView() {
+  if (typeof window === "undefined") return Promise.reject(new Error("no window"));
+  if (window.TradingView) return Promise.resolve(window.TradingView);
+
+  return new Promise((resolve, reject) => {
+    let script = document.getElementById(TV_SCRIPT_ID);
+    if (!script) {
+      script = document.createElement("script");
+      script.id = TV_SCRIPT_ID;
+      script.src = TV_SCRIPT_SRC;
+      script.async = true;
+      document.head.appendChild(script);
+    }
+    script.addEventListener("load", () => resolve(window.TradingView), { once: true });
+    script.addEventListener("error", () => reject(new Error("Failed to load TradingView")), { once: true });
+  });
+}
 
 const TradingViewWidget = ({ selectedSymbol = "BINANCE:BTCUSDT" }) => {
   const containerRef = useRef(null);
-  const [mounted, setMounted] = useState(false);
+  // Follow the app's own light/dark toggle instead of hardcoding "dark".
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    // Copy the ref for the cleanup closure (react-hooks/exhaustive-deps).
+    const container = containerRef.current;
+    if (!container) return;
 
-  useEffect(() => {
-    if (!mounted || !containerRef.current) return;
+    let cancelled = false;
 
-    try {
-      const widgetConfig = {
-        autosize: true,
-        symbol: selectedSymbol,
-        interval: "D",
-        timezone: "Etc/UTC",
-        theme: "dark",
-        style: "1",
-        locale: "en",
-        toolbar_bg: "#f1f3f6",
-        enable_publishing: false,
-        allow_symbol_change: true,
-        container_id: "tradingview_widget",
-        hide_side_toolbar: false,
-        withdateranges: true,
-        details: true,
-        hotlist: true,
-        calendar: false,
-        studies: ["MASimple@tv-basicstudies"],
-        show_popup_button: true,
-        popup_width: "1000",
-        popup_height: "650"
-      };
-
-      // Load TradingView script
-      const script = document.createElement("script");
-      script.src = "https://s3.tradingview.com/tv.js";
-      script.type = "text/javascript";
-      script.onload = function() {
-        if (typeof TradingView !== 'undefined') {
-          new TradingView.widget({
-            ...widgetConfig,
-            container: containerRef.current
-          });
+    loadTradingView()
+      .then((TradingView) => {
+        if (cancelled || !TradingView) return;
+        new TradingView.widget({
+          autosize: true,
+          symbol: selectedSymbol,
+          interval: "D",
+          timezone: "Etc/UTC",
+          theme: resolvedTheme === "light" ? "light" : "dark",
+          style: "1",
+          locale: "en",
+          enable_publishing: false,
+          allow_symbol_change: true,
+          hide_side_toolbar: false,
+          withdateranges: true,
+          details: true,
+          studies: ["MASimple@tv-basicstudies"],
+          container_id: container.id,
+        });
+      })
+      .catch((error) => {
+        console.error("TradingView widget error:", error);
+        if (!cancelled && container) {
+          container.innerHTML =
+            '<div class="flex h-full items-center justify-center text-sm text-muted-foreground">Chart unavailable</div>';
         }
-      };
+      });
 
-      document.head.appendChild(script);
+    return () => {
+      cancelled = true;
+      // Leave the shared <script> in place; just clear this instance.
+      if (container) container.innerHTML = "";
+    };
+  }, [selectedSymbol, resolvedTheme]);
 
-      return () => {
-        // Cleanup script
-        const existingScript = document.querySelector(`script[src="${script.src}"]`);
-        if (existingScript) {
-          document.head.removeChild(existingScript);
-        }
-        // Clear container
-        if (containerRef.current) {
-          containerRef.current.innerHTML = '';
-        }
-      };
-    } catch (error) {
-      console.error('TradingView widget error:', error);
-    }
-  }, [mounted, selectedSymbol]);
-
-  if (!mounted) {
-    return (
-      <div className="w-full h-[610px] bg-background/50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-muted-foreground">Loading chart...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div 
-      id="tradingview_widget"
-      ref={containerRef}
-      className="w-full h-[610px]"
-    />
-  );
+  return <div id="tradingview_widget" ref={containerRef} className="w-full h-[610px]" />;
 };
 
 export default TradingViewWidget;
