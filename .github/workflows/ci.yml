@@ -51,4 +51,8 @@ jobs:
           cache: npm
       - run: npm ci
       # Fail only on high/critical so routine low-severity noise doesn't block PRs.
-      - run: npm audit --audit-level=high
+      # Runtime deps only: the site is a static export, so build tooling
+      # (Tailwind, ESLint) never ships and can't be reached by a visitor.
+      - run: npm audit --omit=dev --audit-level=high
+      # Still surface dev-tooling advisories in the log without failing the job.
+      - run: npm audit --audit-level=high || true
